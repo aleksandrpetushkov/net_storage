@@ -6,19 +6,20 @@ using namespace sf;
 
 int main()
 {
-	cout << "Start client.";
-	TcpSocket clnt_sock;
+	cout << "Start client.\n";
+	TcpSocket clnt_sock; // Создание сокета для соединения с сервером
 	cout << "Connecting....\n";
-	//;
-	if(clnt_sock.connect("localhost", 154)!=Socket::Done)
+	if(clnt_sock.connect("localhost", 154)!=Socket::Done)// если не удается подключиться выход из программы
 	{
 		cout << "Connection is not established. Pres any key.\n";
 		cin.get();
 		return 1;
 	}
 	cout << "Connection is established.\n";
-	
-	clnt_sock.send("HW", 3);
+	while(true)
+	{
+		cout<<Ent
+	}
 
 
 	cin.get();
