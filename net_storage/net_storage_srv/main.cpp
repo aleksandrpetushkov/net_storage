@@ -17,12 +17,14 @@ int main()
 	size_t received = 0;
 	char buf[1024];
 	cout << "Connected established.\n";
-	while(true)
+	srv_sock.disconnect();
 	{
+		
 		srv_sock.receive(buf, sizeof(buf), received);
+		//srv_sock.receive()
 		cout << "Received: " << buf << endl;
 	}
-
+	cout << "End\n";
 
 	
 	
