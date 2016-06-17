@@ -20,16 +20,44 @@ int main()
 		return 1;
 	}
 	cout << "Connection is established.\n";
-	char mas[2];
+	char mas[1];
+	mas[0] = 1;
+	cln.Send(mas);
+	cln.Received(mas);
+	if(mas[0]==1)
+	{
+		cout << "Ther good\n";
+	}
+	else
+	{
+		cout << "Ther bad\n";
+	}
+	//*
+	unsigned short menu;
 	while(true)
 	{
+		cout << "Enter number menu:\n1. Set value.\n2. Get value.n";
+		cin >> menu;
+		switch(menu)
+		{
+		case 1:
+			int key, val;
+			cout << "Enter key: ";
+			cin >> key;
+			cout << "Enter value: ";
+			cin >> val;
+			cln.SetVal(key, val);
+			break;
+		}
+
 		cout << "Enter key: ";
 		cin >> mas[0];
 		cout << "Enter value: ";
 		cin >> mas[1];
-		cln.send(mas);
+		cln.Send(mas);
 		cin.get();
 	}
+	//*/
 
 
 	cin.get();

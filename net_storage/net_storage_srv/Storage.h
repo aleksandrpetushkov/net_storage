@@ -1,23 +1,19 @@
 #include <map>
 
-
-class Cont
+class Storage
 {
 	void Set(char const &key, char const &val)
 	{
 		cont[key] = val;
 	}
-	char Get(char const &key)
+	int Get(int const &key)
 	{
-		if(cont.find(key)==cont.end())
+		if (cont.find(key) == cont.end())
 		{
 			return '\0';
 		}
 		return cont[key];
 	}
-
 protected:
-	std::map<char, char> cont;
-
-
+	std::map<int, int> cont;
 };
