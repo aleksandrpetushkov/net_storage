@@ -4,14 +4,14 @@ using namespace sf;
 
 class Protocol
 {
-
+public:
 	/*
 	Protocol(const TcpSocket &sock)
 	{
 		tcp
 	}
 	//*/
-	bool SetVal(const int & key, const int &val, TcpSocket &soc)
+	static bool SetVal(const int & key, const int &val, TcpSocket &soc)
 	{
 		char pack[9];
 		pack[0] = 1; //Код "1" - установить значение
@@ -23,7 +23,7 @@ class Protocol
 		}
 		return false;
 	}
-	int GetVal(const int &key, TcpSocket &soc)
+	static int GetVal(const int &key, TcpSocket &soc)
 	{
 		int result;
 		char pack[5];
@@ -32,7 +32,7 @@ class Protocol
 		if (soc.send(pack, 5) == TcpSocket::Done)
 		{
 			std::size_t receive = 0;
-			if(soc.receive(pack, 4, receive)==TcpSocket::Done)
+			if(soc.receive(pack, 5, receive)==TcpSocket::Done)
 			{
 				result = bytes_to_int(pack, 0);
 				return result;
@@ -50,7 +50,7 @@ class Protocol
 
 
 protected:
-	void int_to_bytes(char* mass_bytes, const short &numb, const int &val)
+	static void int_to_bytes(char* mass_bytes, const short &numb, const int &val)
 	{
 
 		int tmp_v;
@@ -66,7 +66,7 @@ protected:
 		}
 	}
 
-	int bytes_to_int(char *mass_bytes, const short &numb)
+	static int bytes_to_int(char *mass_bytes, const short &numb)
 	{
 		int result(0);
 		for (short i = 0; i < 4; ++i)

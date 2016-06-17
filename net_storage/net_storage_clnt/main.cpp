@@ -15,7 +15,7 @@ int main()
 	cln.start("localhost", 154);
 	if (!cln.Connect())
 	{
-		cout << "Connection is not established. Pres any key.\n";
+		cout << "Connection is not established. Pres e(xit) || r(esume).\n";
 		cin.get();
 		return 1;
 	}
