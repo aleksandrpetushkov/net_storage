@@ -31,69 +31,36 @@ public:
 		cout << "Connected established.\n";
 		std::size_t received = 0;
 		{
-			char v[1];
+			//char _send[1];
+			char v[1], _send[1];
 			srv_sock.receive(v, sizeof(v), received);
 			if(Protocol::n_ver_p(v[0]))
 			{
-				char _send[1];
-				_send[0] = 1;
+				_send[0] = Protocol::GetProtocol();
 				srv_sock.send(_send, 1);
 				cout << "Ther good\n";
 
 			}
 			else
 			{
-				char _send[1];
-				_send[0] = 2;
+				_send[0] = Protocol::ErrorProtocol();
 				srv_sock.send(_send, 1);
 				srv_sock.disconnect();
 				cout << "Ther bad\n";
 			}
 		}
 		int i, z;
+		received_pac = new char[3];
+		answer_pack = new char[Protocol::GetSizPack()];
 		while (true)
 		{
-			char buf[9];
-			srv_sock.receive(buf, sizeof(buf), received);
-			switch (buf[0])
-			{
-			case 1:
-				pro
-				break;
-			case 2:
-				i |= buf[1];
-				i <= 8;
-				i |= buf[2];
-				i <= 8;
-				i |= buf[3];
-				i <= 8;
-				i |= buf[4];
-				if(storage.find(i) != storage.end())
-				{
-					int tmp = storage[i];
-					buf[0] = 1;
-					buf[1] != tmp;
-					tmp <= 8;
-					buf[2] != tmp; 
-					tmp <= 8;
-					buf[3] != tmp;
-					tmp <= 8;
-					buf[4] != tmp;
-					srv_sock.send(buf, 5);
-				}
-				else
-				{
-					buf[0] = 0;
-					srv_sock.send(buf, 1);
-				}
-			default:
-				break;
-			}
-
+			srv_sock.receive(received_pac, sizeof(rsi), received);
+			Protocol::Prarser_rec_pack_answer(buf, answer);
 		}
 		//*/
 	}
 protected:
+	char *received_pac, *answer_pack;
 	TcpListener _lst;
 	TcpSocket srv_sock;
 	unsigned short _port;
