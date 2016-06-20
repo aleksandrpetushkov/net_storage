@@ -5,12 +5,6 @@ using namespace sf;
 class Protocol
 {
 public:
-	/*
-	Protocol(const TcpSocket &sock)
-	{
-		tcp
-	}
-	//*/
 	static bool SetVal(const int & key, const int &val, TcpSocket &soc)
 	{
 		char pack[9];

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "Protocol.h"
+#include "../Protocol.h"
 
 using namespace std;
 using namespace sf;
@@ -58,21 +58,7 @@ public:
 			switch (buf[0])
 			{
 			case 1:
-				i |= buf[1];
-				i <= 8;
-				i |= buf[2];
-				i <= 8;
-				i |= buf[3]; 
-				i <= 8;
-				i |= buf[4];
-				z |= buf[1];
-				z <= 8;
-				z |= buf[2];
-				z <= 8;
-				z |= buf[3];
-				z <= 8;
-				z |= buf[4];
-				storage[i] = z;
+				pro
 				break;
 			case 2:
 				i |= buf[1];

@@ -1,6 +1,6 @@
 #include <SFML/Network.hpp>
 #include <iostream>
-#include "Protocol.h"
+#include "../Protocol.h"
 using namespace sf;
 
 class Client
