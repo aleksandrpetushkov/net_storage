@@ -20,6 +20,7 @@ int main()
 		return 1;
 	}
 	cout << "Connection is established.\n";
+	/*
 	char mas[1];
 	mas[0] = 1;
 	cln.Send(mas);
@@ -32,30 +33,58 @@ int main()
 	{
 		cout << "Ther bad\n";
 	}
+	//*/
 	//*
 	unsigned short menu;
+	int key, val;
 	while(true)
 	{
-		cout << "Enter number menu:\n1. Set value.\n2. Get value.n";
-		cin >> menu;
-		switch(menu)
+		try
 		{
-		case 1:
-			int key, val;
-			cout << "Enter key: ";
-			cin >> key;
-			cout << "Enter value: ";
-			cin >> val;
-			cln.SetVal(key, val);
-			break;
-		}
+			cout << "\n1. Set value.\n2. Get value.\n3. Delete value.\nEnter number menu:";
+			cin >> menu;
+			switch (menu)
+			{
+			case 1:
+				cout << "Enter key: ";
+				cin >> key;
+				cout << "Enter value: ";
+				cin >> val;
+				if(cln.SetVal(key, val))
+				{
+					cout << "Success.\n";
+				}
+				else
+				{
+					cout << "Error.\n";
+				}
+				break;
+			case 2:
+				cout << "Enter key: ";
+				cin >> key;
+				cout << "Val from server: " << cln.GetVal(key) << endl;
+				break;
+			case 3:
+				cout << "Enter key: ";
+				cin >> key;
+				if (cln.DelVal(key))
+				{
+					cout << "Success.\n";
+				}
+				else
+				{
+					cout << "Error.\n";
+				}
+				break;
 
-		cout << "Enter key: ";
-		cin >> mas[0];
-		cout << "Enter value: ";
-		cin >> mas[1];
-		cln.Send(mas);
-		cin.get();
+			default:
+				break;
+			}
+		}
+		catch (char *mess)
+		{
+			cout << mess;
+		}
 	}
 	//*/
 

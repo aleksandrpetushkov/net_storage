@@ -10,46 +10,84 @@ public:
 	{
 		if(sock.connect("localhost", port) == Socket::Done)
 		{
-			connect = true;
+			char pack[9];
+			Protocol::PackProtocol(pack);
+			if(sock.send(pack,9)==TcpSocket::Done)
+			{
+				size_t received = 0;
+				if(sock.receive(pack,9,received)==TcpSocket::Done)
+				{
+					connect = true;
+				}
+			}
+			
 		}
 	}
 	bool Connect()
 	{
 		return connect;
 	}
-	void Send(const char mas[])
-	{
-		sock.send(mas, sizeof(mas));
-	}
-	bool Received(void *data)
-	{
-		size_t received = 0;
-		if(sock.receive(data, 1, received)==TcpSocket::Disconnected)
-		{
-			return true;
-		}
-		return false;
-	}
-	
-	
-	//*
+	//
+
 	bool SetVal(const int &key, const int &val)
 	{
-
-		if (Protocol::SetVal(key, val, sock))
+		size_t received = 0;
+		Protocol::C_PackSetVal(pack, key, val);
+		if(sock.send(pack, 9) == TcpSocket::Done)
 		{
-			return true;
+			if (sock.receive(pack, 9, received) == TcpSocket::Done)
+			{
+				return Protocol::C_AnswerServOk(pack);
+			}
+			else
+			{
+				return false;
+			}
 		}
-		return false;
+		else
+		{
+			return false;
+		}
 	}
+	//
+
 	int GetVal(const int &key)
 	{
-		Protocol::GetVal(key, sock);
+		size_t received = 0;
+		Protocol::C_PackGetVal(pack, key);
+		if (sock.send(pack, sizeof(pack)) == TcpSocket::Done)
+		{
+			if (sock.receive(pack, sizeof(pack), received) == TcpSocket::Done)
+			{
+				if(Protocol::C_AnswerServOk(pack))
+				{
+					return Protocol::C_GetValFromPack(pack);
+				}
+				throw "Server: values is not exist.\n\0";
+			}
+		}
 	}
-	//*/
+	bool DelVal(const int &key)
+	{
+		size_t received = 0;
+		Protocol::C_PackGetVal(pack, key);
+		if(sock.send(pack, sizeof(pack))==TcpSocket::Done)
+		{
+			if(sock.receive(pack,9,received)==TcpSocket::Done)
+			{
+				if (Protocol::C_AnswerServOk(pack))
+				{
+					return true;
+;				}
+				throw "Server: values is not exist.\n\0";
+			}
+		}
+	}
+	//
 
 
 protected:
+	char pack[9];
 	TcpSocket sock;
 	bool connect = false;
 

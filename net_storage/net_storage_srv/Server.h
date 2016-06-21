@@ -23,39 +23,63 @@ public:
 		{
 			throw "Error open port for listen.\n";
 		}
-		cout << "Wait connect...\n";
-		if(!_lst.accept(srv_sock)==TcpSocket::Done)
-		{
-			throw "Error open socket!\n";
-		}
-		cout << "Connected established.\n";
-		std::size_t received = 0;
-		{
-			//char _send[1];
-			char v[1], _send[1];
-			srv_sock.receive(v, sizeof(v), received);
-			if(Protocol::n_ver_p(v[0]))
-			{
-				_send[0] = Protocol::GetProtocol();
-				srv_sock.send(_send, 1);
-				cout << "Ther good\n";
-
-			}
-			else
-			{
-				_send[0] = Protocol::ErrorProtocol();
-				srv_sock.send(_send, 1);
-				srv_sock.disconnect();
-				cout << "Ther bad\n";
-			}
-		}
-		int i, z;
-		received_pac = new char[3];
-		answer_pack = new char[3];
 		while (true)
-		{
-			srv_sock.receive(received_pac, 3, received);
+		{			
+			cout << "Wait new client...\n";
+			if (!_lst.accept(srv_sock) == TcpSocket::Done)
+			{
+				throw "Error open socket!\n";
+			}
+			cout << "Connected established.\n";
+			std::size_t received = 0;
+			{
+				char v[9];
+				srv_sock.receive(v, sizeof(v), received);
+				if (Protocol::VerOk(v))
+				{
+					if (srv_sock.send(v, 9) == TcpSocket::Done)
+					{
+						cout << "Ther good\n";
+					}
+				}
+				else
+				{
+					Protocol::S_ErrorProtocol(v);
+					srv_sock.send(v, 9);
+					srv_sock.disconnect();
+					cout << "Ther bad\n";
+				}
+			}
+			while (true)
+			{
+				if (srv_sock.receive(received_pac, 9, received) == TcpSocket::Done)
+				{
+					cout << "Income request.\n";
+					Processing(received_pac, answer_pack);
+					cout << (int)answer_pack[0] << "___" << answer_pack[1] << "___" << answer_pack[2] << "___" << endl;
+
+				}
+				else
+				{
+					cout << "Error connection.\n";
+					srv_sock.disconnect();
+					break;
+
+				}
+				if (srv_sock.send(answer_pack, 9) == TcpSocket::Done)
+				{
+					//cout << (int)answer_pack[0] << "___" << answer_pack[1] << "___"<<answer_pack[2] << "___" << endl;
+					cout << "Answer transmission.\n";
+				}
+				else
+				{
+					cout << "Error connection.\n";
+					srv_sock.disconnect();
+					break;
+				}
+			}
 		}
+		
 		//*/
 	}
 protected:
@@ -65,26 +89,43 @@ protected:
 		switch (received_pac[0])
 		{
 		case  Protocol::_set_val:
-			storage[Protocol::GetKey(received_pac)] = Protocol::GetVal(received_pac);
+			key = Protocol::GetKey(received_pac);
+			//cout << "inpack: " << received_pac[0] << "___" << received_pac[1] << "___" << received_pac[2] << "___" << endl;
+			//cout << "\n1. key: " << key << endl;
+			storage[key] = Protocol::GetVal(received_pac);
 			answer_pack[0] = 1;
 			break;
 		case Protocol::_get_val:
 			key = Protocol::GetKey(received_pac);
-			if(storage.find(key)==storage.end())
+			//cout <<"\n2. key: "<< key << endl;
+			if(storage.find(key)!=storage.end())
 			{
-				Protocol::AnswerGetVal(answer_pack, storage[key]);
+				Protocol::S_PackGetVal(answer_pack, storage[key]);
+				//cout << "1" << endl;
 			}
 			else
 			{
-				answer_pack[0] = 0; //
+				Protocol::S_PackError(answer_pack);
+				//cout << "2" << endl;
 			}
+			break;
 		case Protocol::_del_elem:
-			storage.erase(Protocol::GetKey(received_pac));
+			if (storage.find(key) != storage.end())
+			{
+				storage.erase(Protocol::GetKey(received_pac));
+				//cout << "1" << endl;
+			}
+			else
+			{
+				Protocol::S_PackError(answer_pack);
+				//cout << "2" << endl;
+			}
 			answer_pack[0] = 1;
+			break;
 		}
 
 	}
-	char *received_pac, *answer_pack;
+	char received_pac[3], answer_pack[3];
 	TcpListener _lst;
 	TcpSocket srv_sock;
 	unsigned short _port;

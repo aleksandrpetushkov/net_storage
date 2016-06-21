@@ -1,62 +1,65 @@
 #include <SFML/Network.hpp>
 
 using namespace sf;
+using namespace std;
 
 class Protocol
 {
 public:
 
 	///*
-	static unsigned char C_SetVal(char * pack, const int &key, const int &val)
+	static void C_PackSetVal(char * pack, const int &key, const int &val)
 	{
+		//cout << "Key: " << key << " val: " << val << endl;
+
 		pack[0] = 1; //Код "1" - установить значение
 		int_to_bytes(pack, 1, key);
 		int_to_bytes(pack, 5, val);
-		/*
-		if(soc.send(pack, 9)==TcpSocket::Done)
+		//std::cout << "pack: " << (int)pack[0] << "___" << (int)pack[1] << "___" << (int)pack[2] << std::endl;
+	}
+
+
+
+
+	static void C_PackGetVal(char * pack, const int &key)
+	{
+		pack[0] = 2; //Код 2 - получить значение по ключу.
+		int_to_bytes(pack, 1, key);
+	}
+	//
+
+	static void C_PackDelVal(char *pack, const int &key)
+	{
+		pack[0] = 3;
+		int_to_bytes(pack, 1, key);
+	}
+	//
+
+	static int C_GetValFromPack(char *pack)
+	{
+		return bytes_to_int(pack, 1);
+	}
+	static void S_PackGetVal(char* answer_pakc, const int& val)
+	{
+		answer_pakc[0] = 1;
+		int_to_bytes(answer_pakc, 1, val);
+	}
+	//
+
+
+	
+	static void S_PackError(char *pack)
+	{
+		pack[0] = 0;
+	}
+
+	static bool C_AnswerServOk(char *pack)
+	{
+		if(pack[0]==1)
 		{
 			return true;
 		}
 		return false;
-		//*/
-	}
-	//*/
-
-
-
-
-	/*
-	static unsigned char TypePackGetVal()
-	{
-		return 2;
-		int result;
-		char pack[5];
-		pack[0] = 2; //Код 2 - получить значение по ключу.
-		int_to_bytes(pack, 1, key);
-		if (soc.send(pack, 5) == TcpSocket::Done)
-		{
-			std::size_t receive = 0;
-			if(soc.receive(pack, 5, receive)==TcpSocket::Done)
-			{
-				result = bytes_to_int(pack, 0);
-				return result;
-			}
-			else
-			{
-				throw "Error received data.\n";
-			}
-		}
-		else
-		{
-			throw "Error transmission request.\n";
-		}
-	}
-	*/
-	
-	static void AnswerGetVal(char* answer_pakc, const int& val)
-	{
-		answer_pakc[0] = 1;
-		int_to_bytes(answer_pakc, 1, val);
 	}
 
 	static int  GetKey(char * pack)
@@ -68,27 +71,11 @@ public:
 		return bytes_to_int(pack, 5);
 	}
 
-	/*
-	static void Prarser_rece_pack_answer(char *buf, char *answer)
-	{
-		switch (buf[0])
-		{
-		case _setval:
-			int key, val;
-			key = bytes_to_int(buf, 1);
-			val = bytes_to_int(buf, 5);
+	
 
-			break;
-		case _getval:
-			break;
-		}
-	}
-	//
-	*/
-
-	static bool n_ver_p(const unsigned char &ver_protocol) 
+	static bool VerOk(char *pack)
 	{
-		if (_ver_protocol == ver_protocol)
+		if (_ver_protocol == pack[0])
 		{
 			return true;
 		}
@@ -96,23 +83,18 @@ public:
 	}
 	//
 	
-	static unsigned char GetProtocol()
+	static void PackProtocol(char* pack)
 	{
-		return _ver_protocol;
+		pack[0]=_ver_protocol;
 	}
 	//
 
-	static unsigned char ErrorProtocol()
+	static void S_ErrorProtocol(char * pack)
 	{
-		return _error_protocol;
+		pack[0] = _error_protocol;
 	}
 	//
 	
-	/*	static unsigned char GetSizPack()
-	{
-		return _size_pack;
-	}
-	//*/
 	static const unsigned char _set_val = 1;
 	static const unsigned char _get_val = 2;
 	static const unsigned char _del_elem = 3;
@@ -142,10 +124,6 @@ protected:
 	}
 	static const unsigned char _ver_protocol=1;
 	static const unsigned char _error_protocol=0;
-
-
-	//static const unsigned char _size_pack = 3;
-	
 	static const unsigned char size_pac = 3;
 
 };
