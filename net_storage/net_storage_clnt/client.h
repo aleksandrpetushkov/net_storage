@@ -70,7 +70,7 @@ public:
 	bool DelVal(const int &key)
 	{
 		size_t received = 0;
-		Protocol::C_PackGetVal(pack, key);
+		Protocol::C_PackDelVal(pack, key);
 		if(sock.send(pack, sizeof(pack))==TcpSocket::Done)
 		{
 			if(sock.receive(pack,9,received)==TcpSocket::Done)

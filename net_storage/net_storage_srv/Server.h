@@ -56,7 +56,7 @@ public:
 				{
 					cout << "Income request.\n";
 					Processing(received_pac, answer_pack);
-					cout << (int)answer_pack[0] << "___" << answer_pack[1] << "___" << answer_pack[2] << "___" << endl;
+					//cout << (int)answer_pack[0] << "___" << answer_pack[1] << "___" << answer_pack[2] << "___" << endl;
 
 				}
 				else
@@ -85,42 +85,50 @@ public:
 protected:
 	void Processing(char * received_pac, char * answer_pack)
 	{
-		int key;
+		int key = Protocol::GetKey(received_pac);
 		switch (received_pac[0])
 		{
 		case  Protocol::_set_val:
-			key = Protocol::GetKey(received_pac);
+			
 			//cout << "inpack: " << received_pac[0] << "___" << received_pac[1] << "___" << received_pac[2] << "___" << endl;
 			//cout << "\n1. key: " << key << endl;
 			storage[key] = Protocol::GetVal(received_pac);
 			answer_pack[0] = 1;
+			cout << "Set: key: " << key << " val: " << Protocol::GetVal(received_pac) << endl;
 			break;
 		case Protocol::_get_val:
 			key = Protocol::GetKey(received_pac);
-			//cout <<"\n2. key: "<< key << endl;
+			cout << "Get: key: " << key << " val: ";
 			if(storage.find(key)!=storage.end())
 			{
 				Protocol::S_PackGetVal(answer_pack, storage[key]);
+				cout << storage[key] << endl;
 				//cout << "1" << endl;
 			}
 			else
 			{
+				cout << "not exist.\n";
 				Protocol::S_PackError(answer_pack);
 				//cout << "2" << endl;
 			}
 			break;
 		case Protocol::_del_elem:
+			cout << "Del: key: " << key;
 			if (storage.find(key) != storage.end())
 			{
+				cout << " - deleted\n";
 				storage.erase(Protocol::GetKey(received_pac));
+				answer_pack[0] = 1;
 				//cout << "1" << endl;
 			}
 			else
 			{
+				cout << " not exit.\n";
 				Protocol::S_PackError(answer_pack);
+				answer_pack[0] = 0;
+
 				//cout << "2" << endl;
 			}
-			answer_pack[0] = 1;
 			break;
 		}
 
