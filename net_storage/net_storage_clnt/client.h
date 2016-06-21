@@ -30,6 +30,9 @@ public:
 		}
 		return false;
 	}
+	
+	
+	//*
 	bool SetVal(const int &key, const int &val)
 	{
 
@@ -43,6 +46,8 @@ public:
 	{
 		Protocol::GetVal(key, sock);
 	}
+	//*/
+
 
 protected:
 	TcpSocket sock;

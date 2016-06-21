@@ -51,15 +51,39 @@ public:
 		}
 		int i, z;
 		received_pac = new char[3];
-		answer_pack = new char[Protocol::GetSizPack()];
+		answer_pack = new char[3];
 		while (true)
 		{
-			srv_sock.receive(received_pac, sizeof(rsi), received);
-			Protocol::Prarser_rec_pack_answer(buf, answer);
+			srv_sock.receive(received_pac, 3, received);
 		}
 		//*/
 	}
 protected:
+	void Processing(char * received_pac, char * answer_pack)
+	{
+		int key;
+		switch (received_pac[0])
+		{
+		case  Protocol::_set_val:
+			storage[Protocol::GetKey(received_pac)] = Protocol::GetVal(received_pac);
+			answer_pack[0] = 1;
+			break;
+		case Protocol::_get_val:
+			key = Protocol::GetKey(received_pac);
+			if(storage.find(key)==storage.end())
+			{
+				Protocol::AnswerGetVal(answer_pack, storage[key]);
+			}
+			else
+			{
+				answer_pack[0] = 0; //
+			}
+		case Protocol::_del_elem:
+			storage.erase(Protocol::GetKey(received_pac));
+			answer_pack[0] = 1;
+		}
+
+	}
 	char *received_pac, *answer_pack;
 	TcpListener _lst;
 	TcpSocket srv_sock;
