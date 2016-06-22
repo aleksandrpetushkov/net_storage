@@ -13,18 +13,9 @@ using namespace std;
 using namespace sf;
 
 
-void fr()
-{
-	cout << "eddd";
-}
-
 class TClient
 {
 public:
-	TClient()
-	{
-		
-	}
 	TClient(TcpSocket *sock, Mutex *mx, map<int, int> *storage)
 	{
 		_storage = storage;
@@ -146,7 +137,7 @@ protected:
 class Server
 {
 public:
-	Server(unsigned short &port)
+	Server(unsigned short const &port)
 	{
 		
 		_port = port;
@@ -195,11 +186,6 @@ public:
 							}
 						}
 						cout << "Clients after clean:" << mass_connect.size() << endl;
-						//tttt.launch();
-						//TCl->
-						//thread ttt([TCl]() {TCl->Run(); });
-						//Thr = new thread([TCl)](){TCl->Run()});
-						//lstTC.push_back(TCl);
 					}
 					else
 					{

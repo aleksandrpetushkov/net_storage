@@ -98,8 +98,6 @@ public:
 	static const unsigned char _set_val = 1;
 	static const unsigned char _get_val = 2;
 	static const unsigned char _del_elem = 3;
-
-protected:
 	static void int_to_bytes(char* mass_bytes, const short &numb, const int &val)
 	{
 
@@ -122,6 +120,9 @@ protected:
 		}
 		return result;
 	}
+
+protected:
+	
 	static const unsigned char _ver_protocol=1;
 	static const unsigned char _error_protocol=0;
 	static const unsigned char size_pac = 3;

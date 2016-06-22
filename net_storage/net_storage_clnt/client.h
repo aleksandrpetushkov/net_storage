@@ -46,20 +46,17 @@ public:
 			}
 			else
 			{
-				cout << "Conection is lost, reconnect...\n";
-				start();
+				return false;
 			}
 		}
 		else
 		{
-			connect = false;
-			cout << "Conection is lost, reconnect...\n";
-			start();
+			return false;
 		}
 	}
 	//
 
-	bool GetVal(int &key)
+	bool GetVal(int const &key)
 	{
 		size_t received = 0;
 		Protocol::C_PackGetVal(pack, key);
@@ -71,18 +68,16 @@ public:
 				{
 					return Protocol::C_GetValFromPack(pack);
 				}
-				throw "Server: values is not exist.\n\0";
+				return false;
 			}
 			else
 			{
-				cout << "Conection is lost, reconnect...\n";
-				start();
+				return false;
 			}
 		}
 		else
 		{
-			cout << "Conection is lost, reconnect...\n";
-			start();
+			return false;
 		}
 	}
 	bool DelVal(const int &key)
