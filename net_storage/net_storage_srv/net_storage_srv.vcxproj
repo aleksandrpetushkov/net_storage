@@ -137,6 +137,7 @@
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="Storage.h" />
     <ClInclude Include="Server.h" />
+    <ClInclude Include="TClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
