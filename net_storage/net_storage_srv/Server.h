@@ -1,9 +1,9 @@
 #include <SFML\Network.hpp>
-//#include <SFML\System.hpp>
+#include <SFML\System.hpp>
 #include <iostream>
 #include <map>
 #include <vector>
-#include <thread>
+//#include <thread>
 //#include "TClient.h"
 #include <string>
 #include "../Protocol.h"
@@ -21,6 +21,10 @@ void fr()
 class TClient
 {
 public:
+	TClient()
+	{
+		
+	}
 	TClient(TcpSocket *sock, Mutex *mx, map<int, int> *storage)
 	{
 		_storage = storage;
@@ -35,18 +39,14 @@ public:
 		{
 			if ((*_sock).receive(received_pac, 9, received) == TcpSocket::Done)
 			{
-				cout << "Income request.\n";
+				cout << "Income request from client: " << (*_sock).getRemoteAddress() << ":" << (*_sock).getRemotePort() << ".\n";
 				Processing(received_pac, answer_pack);
 				//cout << (int)answer_pack[0] << "___" << answer_pack[1] << "___" << answer_pack[2] << "___" << endl;
 
 			}
 			else
 			{
-				cout << "Error connection.\n";
-				(*_sock).disconnect();
-				delete _sock;
 				break;
-
 			}
 			if ((*_sock).send(answer_pack, 9) == TcpSocket::Done)
 			{
@@ -55,12 +55,10 @@ public:
 			}
 			else
 			{
-				cout << "Error connection.\n";
-				(*_sock).disconnect();
-				delete _sock;
 				break;
 			}
 		}
+		cout << "Client: " << (*_sock).getRemoteAddress() << ":" << (*_sock).getRemotePort() << " is lost.\n";
 		//По какой-то причине связь разорвалась, выставляется _stop в тру, что бы основной поток мог удалить данный объект.
 		_m_stop.lock();
 		_stop = true;
@@ -76,6 +74,13 @@ public:
 		_m_stop.unlock();
 		return result;
 	}
+	~TClient()
+	{
+		//cout << "Destructor start...\n";
+		(*_sock).disconnect();
+		delete _sock;
+
+	}
 protected:
 	void Processing(char * received_pac, char * answer_pack)
 	{
@@ -86,7 +91,7 @@ protected:
 			//cout << "inpack: " << received_pac[0] << "___" << received_pac[1] << "___" << received_pac[2] << "___" << endl;
 			//cout << "\n1. key: " << key << endl;
 			(*_mx).lock();
-			(*storage)[key] = Protocol::GetVal(received_pac);
+			(*_storage)[key] = Protocol::GetVal(received_pac);
 			(*_mx).unlock();
 			answer_pack[0] = 1;
 			cout << "Set: key: " << key << " val: " << Protocol::GetVal(received_pac) << endl;
@@ -95,36 +100,32 @@ protected:
 			key = Protocol::GetKey(received_pac);
 			cout << "Get: key: " << key << " val: ";
 			(*_mx).lock();
-			if ((*storage).find(key) != (*storage).end())
+			if ((*_storage).find(key) != (*_storage).end())
 			{
-				Protocol::S_PackGetVal(answer_pack, (*storage)[key]);
-				cout << (*storage)[key] << endl;
-				//cout << "1" << endl;
+				Protocol::S_PackGetVal(answer_pack, (*_storage)[key]);
+				cout << (*_storage)[key] << endl;
 			}
 			else
 			{
 				cout << "not exist.\n";
 				Protocol::S_PackError(answer_pack);
-				//cout << "2" << endl;
 			}
 			(*_mx).unlock();
 			break;
 		case Protocol::_del_elem:
 			cout << "Del: key: " << key;
 			(*_mx).lock();
-			if ((*storage).find(key) != (*storage).end())
+			if ((*_storage).find(key) != (*_storage).end())
 			{
 				cout << " - deleted\n";
-				(*storage).erase(Protocol::GetKey(received_pac));
+				(*_storage).erase(key);
 				answer_pack[0] = 1;
-				//cout << "1" << endl;
 			}
 			else
 			{
 				cout << " not exit.\n";
 				Protocol::S_PackError(answer_pack);
 				answer_pack[0] = 0;
-				//cout << "2" << endl;
 			}
 			(*_mx).unlock();
 			break;
@@ -133,7 +134,6 @@ protected:
 
 	
 	bool _stop = false;
-	map<int, int> *storage;
 	Mutex _m_stop;
 	Mutex *_mx;
 	TcpSocket *_sock;
@@ -168,7 +168,7 @@ public:
 			{
 				throw "Error open socket!\n";
 			}
-			cout << "Income new connection";
+			cout << "Income new client: "<<(*srv_sock).getRemoteAddress()<<":"<<(*srv_sock).getRemotePort()<<".\n";
 			std::size_t received = 0;
 			{
 				char v[9];
@@ -178,12 +178,34 @@ public:
 					cout << "Protocol - ok.\n";
 					if ((*srv_sock).send(v, 9) == TcpSocket::Done)
 					{
-						cout << "Answer is send.\n"<<"Start connection in new thread.\n";
-						//TClient(TcpSocket *sock, Mutex *mx, map<int, int> *mp)
-						TCl =  new TClient(srv_sock, &mx, &storage);
+						//cout << "Answer is send.\n"<<"Start connection in new thread.\n";
+						TCL =  new TClient(srv_sock, &mx, &storage);
+						TRC = new Thread(&TClient::Run, TCL);
+						TRC->launch();
+						mass_connect[TRC] = TCL;
+						cout << "Clients before clean:" << mass_connect.size() << endl;
+						for(auto& elem:mass_connect)
+						{
+							//cout << "!!!\n";
+							if(elem.second->Stop())
+							{
+								delete elem.second;
+								delete elem.first;
+								mass_connect.erase(elem.first);
+							}
+						}
+						cout << "Clients after clean:" << mass_connect.size() << endl;
+						//tttt.launch();
 						//TCl->
-						Thr = new Thread(fun);
+						//thread ttt([TCl]() {TCl->Run(); });
+						//Thr = new thread([TCl)](){TCl->Run()});
 						//lstTC.push_back(TCl);
+					}
+					else
+					{
+						cout << "Error connection.\n";
+						(*srv_sock).disconnect();
+						delete srv_sock;
 					}
 				}
 				else
@@ -191,113 +213,21 @@ public:
 					Protocol::S_ErrorProtocol(v);
 					(*srv_sock).send(v, 9);
 					(*srv_sock).disconnect();
-					cout << "Ther bad\n";
-				}
-				/*
-				for(const auto &elem:lstTC)
-				{
-					if(elem->Stop())
-					{
-						delete elem;
-					}
-				}
-				//*/
-			}
-			
-			/*
-			while (true)
-			{
-				if (srv_sock.receive(received_pac, 9, received) == TcpSocket::Done)
-				{
-					cout << "Income request.\n";
-					Processing(received_pac, answer_pack);
-					//cout << (int)answer_pack[0] << "___" << answer_pack[1] << "___" << answer_pack[2] << "___" << endl;
-
-				}
-				else
-				{
-					cout << "Error connection.\n";
-					srv_sock.disconnect();
-					break;
-
-				}
-				if (srv_sock.send(answer_pack, 9) == TcpSocket::Done)
-				{
-					//cout << (int)answer_pack[0] << "___" << answer_pack[1] << "___"<<answer_pack[2] << "___" << endl;
-					cout << "Answer transmission.\n";
-				}
-				else
-				{
-					cout << "Error connection.\n";
-					srv_sock.disconnect();
-					break;
+					delete srv_sock;
+					cout << "Protocol - bad";
 				}
 			}
-			//*/
-
 		}
 	}
 
 
-	/*
-	void Processing(char * received_pac, char * answer_pack)
-	{
-		int key = Protocol::GetKey(received_pac);
-		switch (received_pac[0])
-		{
-		case  Protocol::_set_val:
-			//cout << "inpack: " << received_pac[0] << "___" << received_pac[1] << "___" << received_pac[2] << "___" << endl;
-			//cout << "\n1. key: " << key << endl;
-			storage[key] = Protocol::GetVal(received_pac);
-			answer_pack[0] = 1;
-			cout << "Set: key: " << key << " val: " << Protocol::GetVal(received_pac) << endl;
-			break;
-		case Protocol::_get_val:
-			key = Protocol::GetKey(received_pac);
-			cout << "Get: key: " << key << " val: ";
-			if (storage.find(key) != storage.end())
-			{
-				Protocol::S_PackGetVal(answer_pack, storage[key]);
-				cout << storage[key] << endl;
-				//cout << "1" << endl;
-			}
-			else
-			{
-				cout << "not exist.\n";
-				Protocol::S_PackError(answer_pack);
-				//cout << "2" << endl;
-			}
-			break;
-		case Protocol::_del_elem:
-			cout << "Del: key: " << key;
-			if (storage.find(key) != storage.end())
-			{
-				cout << " - deleted\n";
-				storage.erase(Protocol::GetKey(received_pac));
-				answer_pack[0] = 1;
-				//cout << "1" << endl;
-			}
-			else
-			{
-				cout << " not exit.\n";
-				Protocol::S_PackError(answer_pack);
-				answer_pack[0] = 0;
-
-				//cout << "2" << endl;
-			}
-			break;
-		}
-	}
-	//*/
-
+	
 protected:
 
 	Mutex mx;
-	TClient *TCl;
-	Thread *Thr;
+	TClient *TCL;
+	Thread *TRC;
 	map<Thread*, TClient*> mass_connect;
-//	vector<TClient*> lstTC;
-	//char received_pac[3], answer_pack[3];
 	TcpListener _lst;
 	TcpSocket *srv_sock;
 	unsigned short _port;

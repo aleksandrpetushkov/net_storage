@@ -73,7 +73,9 @@ int main()
 				}
 				else
 				{
-					cout << "Error.\n";
+					cout << "Error. Connection is lost. Reconect...\n";
+
+
 				}
 				break;
 
