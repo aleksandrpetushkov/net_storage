@@ -6,9 +6,14 @@ using namespace sf;
 class Client
 {
 public:
-	void start(std::string const &ip, unsigned short const &port)
+	Client(IpAddress const &ip, unsigned short const &port)
 	{
-		if(sock.connect("localhost", port) == Socket::Done)
+		_ip = ip;
+		_port = port;
+	}
+	void start()
+	{
+		if(sock.connect(_ip, _port) == Socket::Done)
 		{
 			char pack[9];
 			Protocol::PackProtocol(pack);
@@ -41,17 +46,20 @@ public:
 			}
 			else
 			{
-				return false;
+				cout << "Conection is lost, reconnect...\n";
+				start();
 			}
 		}
 		else
 		{
-			return false;
+			connect = false;
+			cout << "Conection is lost, reconnect...\n";
+			start();
 		}
 	}
 	//
 
-	int GetVal(const int &key)
+	bool GetVal(int &key)
 	{
 		size_t received = 0;
 		Protocol::C_PackGetVal(pack, key);
@@ -65,6 +73,16 @@ public:
 				}
 				throw "Server: values is not exist.\n\0";
 			}
+			else
+			{
+				cout << "Conection is lost, reconnect...\n";
+				start();
+			}
+		}
+		else
+		{
+			cout << "Conection is lost, reconnect...\n";
+			start();
 		}
 	}
 	bool DelVal(const int &key)
@@ -81,12 +99,22 @@ public:
 ;				}
 				throw "Server: values is not exist.\n\0";
 			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
 		}
 	}
 	//
 
 
 protected:
+	IpAddress _ip;
+	unsigned short _port;
 	char pack[9];
 	TcpSocket sock;
 	bool connect = false;
