@@ -3,6 +3,11 @@
 using namespace sf;
 using namespace std;
 
+
+//
+//
+//
+//
 class Protocol
 {
 public:
@@ -12,7 +17,7 @@ public:
 	{
 		//cout << "Key: " << key << " val: " << val << endl;
 
-		pack[0] = 1; //Êîä "1" - óñòàíîâèòü çíà÷åíèå
+		pack[0] = 1; //ÃŠÃ®Ã¤ "1" - Ã³Ã±Ã²Ã Ã­Ã®Ã¢Ã¨Ã²Ã¼ Ã§Ã­Ã Ã·Ã¥Ã­Ã¨Ã¥
 		int_to_bytes(pack, 1, key);
 		int_to_bytes(pack, 5, val);
 		//std::cout << "pack: " << (int)pack[0] << "___" << (int)pack[1] << "___" << (int)pack[2] << std::endl;
@@ -23,7 +28,7 @@ public:
 
 	static void C_PackGetVal(char * pack, const int &key)
 	{
-		pack[0] = 2; //Êîä 2 - ïîëó÷èòü çíà÷åíèå ïî êëþ÷ó.
+		pack[0] = 2; //ÃŠÃ®Ã¤ 2 - Ã¯Ã®Ã«Ã³Ã·Ã¨Ã²Ã¼ Ã§Ã­Ã Ã·Ã¥Ã­Ã¨Ã¥ Ã¯Ã® ÃªÃ«Ã¾Ã·Ã³.
 		int_to_bytes(pack, 1, key);
 	}
 	//
